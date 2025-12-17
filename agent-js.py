@@ -1,6 +1,11 @@
 from videosdk.agents import Agent, AgentSession, RealTimePipeline, JobContext, RoomOptions, WorkerJob
 from videosdk.plugins.google import GeminiRealtime, GeminiLiveConfig
 import logging
+import os
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 logging.getLogger().setLevel(logging.INFO)
 
@@ -22,10 +27,16 @@ class MyVoiceAgent(Agent):
 
 async def start_session(context: JobContext):
     agent = MyVoiceAgent()
+    
+    # Get API key from environment variable
+    google_api_key = os.getenv("GOOGLE_API_KEY")
+    
+    if not google_api_key:
+        raise ValueError("GOOGLE_API_KEY not found in environment variables. Please check your .env file.")
+    
     model = GeminiRealtime(
         model="gemini-2.5-flash-native-audio-preview-12-2025",
-        # When GOOGLE_API_KEY is set in .env - DON'T pass api_key parameter
-        api_key="AIzaSyDFPmBU-CjkW8Lg0MC0ZRfsQmQxpsF3fSA",
+        api_key=google_api_key,
         config=GeminiLiveConfig(
             voice="Leda",  # Puck, Charon, Kore, Fenrir, Aoede, Leda, Orus, and Zephyr.
             response_modalities=["AUDIO"]
@@ -47,7 +58,7 @@ async def start_session(context: JobContext):
 
 def make_context() -> JobContext:
     room_options = RoomOptions(
-        room_id="ew2z-xxuz-6kd8",  # Replace with your actual room_id
+        room_id="ew2z-xxuz-6kd8",
         name="Gemini Agent",
         playground=True,
     )
